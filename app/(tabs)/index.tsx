@@ -48,20 +48,25 @@ export default function PosScreen() {
       order_id: orderId,
       amount: basket.reduce((acc, item) => acc + item.price_unit, 0)
     };
-
-    const response = await fetchPayOrder(payment);
-
-    if(response && response.status !== 'completed' && orderId) {
-        const status = {status: 'completed'}
-        await fetchChangeStatus(orderId, status);
-
-    }
-    Toast.show('Order payed', {
-      duration: Toast.durations.LONG,
-      position: windowHeight - 150,
-    });
+    const tempBasket = basket;
+    const tempOrderId = orderId;
     setBasket([]);
     setOrderId(null);
+    try {
+      const response = await fetchPayOrder(payment);
+      if (response && response.status !== 'completed' && orderId) {
+        const status = {status: 'completed'}
+        await fetchChangeStatus(orderId, status);
+      }
+      Toast.show('Order payed', {
+        duration: Toast.durations.LONG,
+        position: windowHeight - 150,
+      });
+    } catch (error) {
+      // Restore saved state
+      setBasket(tempBasket);
+      setOrderId(tempOrderId);
+    }
   }, [orderId, basket]);
 
   return (
