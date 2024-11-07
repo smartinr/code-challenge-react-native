@@ -1,31 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, ActivityIndicator, View } from 'react-native';
+import {FlatList, Dimensions} from 'react-native';
 import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-
-const AUTH_USER_TOKEN = ''; // use your own token
+import {fetchOrders} from "@/service/api";
+import {Order} from "@/models/Order";
 
 export default function TabTwoScreen() {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Array<Order>>([]);
 
   useEffect(() => {
-    fetchOrders();
+    getOrders();
   }, []);
 
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('https://kanpla-code-challenge.up.railway.app/orders', {
-        headers: {
-          "x-auth-user": AUTH_USER_TOKEN
-        }
-      })
-      const data = await response.json() as { id: string, created_at: string, amount: number }[];
-      setOrders(data);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
+  const getOrders = async () => {
+      const ordersFetched = await fetchOrders();
+      if(ordersFetched) {
+          setOrders(ordersFetched);
+      }
   };
 
 
@@ -41,11 +34,10 @@ export default function TabTwoScreen() {
           <ThemedView style={styles.orderItem}>
             <ThemedText>{item.id}</ThemedText>
             <ThemedText>{item.created_at}</ThemedText>
-            <ThemedText>{item.amount}$</ThemedText>
+            <ThemedText>{item.amount_total}$</ThemedText>
           </ThemedView>
         )}
       />
-
     </ThemedView>
   );
 }
