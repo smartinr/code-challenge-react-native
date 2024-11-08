@@ -5,13 +5,13 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {fetchOrders} from "@/service/api";
-import {Order} from "@/models/Order";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {useOrientation} from "@/hooks/useOrientation";
+import {useOrderStore} from "@/stores/useOrdersStore";
 
 export default function TabTwoScreen() {
+    const { orders, setOrders } = useOrderStore();
     const [loading, setLoading] = useState<boolean>(true);
-  const [orders, setOrders] = useState<Array<Order>>([]);
 
     const { top: safeTopArea, left: safeLeftArea } = useSafeAreaInsets();
     const {isLandscape} = useOrientation();
