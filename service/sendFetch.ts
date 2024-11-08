@@ -3,7 +3,7 @@ import {Dimensions} from "react-native";
 
 const AUTH_USER_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzbWFydGluckBnbWFpbC5jb20iLCJleHAiOjE3MzIyNzA5NTN9.9IscuCmNfiGa1pOFJNYdNdHti0FUuo1bGPyhSdXkBz0'; // use your own token
 
-export const windowHeight = Dimensions.get('window').height
+const SCREEN_HEIGHT = Dimensions.get('window').height ;
 
 const sendFetch = async (url: string, method?: string, body?: object) => {
     const response = await fetch(url, {
@@ -21,7 +21,8 @@ const sendFetch = async (url: string, method?: string, body?: object) => {
     const errorMessage = `Request failed to send with error ${response.status}`;
     Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
-        position: windowHeight - 150,
+        position: SCREEN_HEIGHT - 150,
+        backgroundColor: '#173829'
     });
 
     return Promise.reject(errorMessage);
