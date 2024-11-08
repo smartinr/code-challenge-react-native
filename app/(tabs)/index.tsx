@@ -1,23 +1,35 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, FlatList, TouchableOpacity, Text } from 'react-native';
+import {StyleSheet, FlatList, TouchableOpacity, Text, useWindowDimensions, View, ActivityIndicator} from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import {fetchChangeStatus, fetchCreateOrder, fetchPayOrder, fetchProducts} from "@/service/api";
 import {Product} from "@/models/Product";
 import Toast from "react-native-root-toast";
-import {windowHeight} from "@/service/sendFetch";
+
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {useOrientation} from "@/hooks/useOrientation";
 
 export default function PosScreen() {
+  const [loading, setLoading] = useState<boolean>(true);
   const [basket, setBasket] = useState<Array<Product>>([]);
   const [products, setProducts] = useState<Array<Product>>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
 
+  const {  height } = useWindowDimensions();
+
+  const { top: safeTopArea, left: safeLeftArea } = useSafeAreaInsets();
+  const {isLandscape} = useOrientation();
+
   const getProducts = async () => {
+    try{
       const productsFetched = await fetchProducts();
       if(productsFetched) {
         setProducts(productsFetched)
       }
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -38,7 +50,7 @@ export default function PosScreen() {
       setOrderId(order.id);
       Toast.show('Order created', {
         duration: Toast.durations.LONG,
-        position: windowHeight - 150,
+        position: height - 150,
       });
     }
   }
@@ -60,7 +72,7 @@ export default function PosScreen() {
       }
       Toast.show('Order payed', {
         duration: Toast.durations.LONG,
-        position: windowHeight - 150,
+        position: height - 150,
       });
     } catch (error) {
       // Restore saved state
@@ -70,14 +82,20 @@ export default function PosScreen() {
   }, [orderId, basket]);
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[{marginTop: safeTopArea}, styles.container, isLandscape && { marginLeft: safeLeftArea}]}>
       <ThemedView style={styles.productGrid}>
+        {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#aaa" />
+            </View>
+        ) : (
         <FlatList
           data={products}
           renderItem={renderProduct}
           keyExtractor={(item) => item.id}
           numColumns={2}
         />
+            )}
       </ThemedView>
 
       <ThemedView style={styles.basket}>
@@ -85,8 +103,8 @@ export default function PosScreen() {
 
         {basket.map((item: Product, index) => (
           <ThemedView key={index} style={styles.basketItem}>
-            <Text style={styles.text}>{item.name}</Text>
-            <Text style={styles.text}>${item.price_unit}</Text>
+            <Text style={styles.textBasket}>{item.name}</Text>
+            <Text style={styles.textBasket}>${item.price_unit}</Text>
           </ThemedView>
         ))}
 
@@ -113,6 +131,11 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   productGrid: {
     flex: 2,
     padding: 10,
@@ -137,6 +160,8 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#ffffff',
+  },
+  textBasket: {
   },
   button: {
     backgroundColor: '#173829',
